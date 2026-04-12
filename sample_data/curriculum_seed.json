@@ -1,0 +1,18 @@
+{
+  "units": [
+    {
+      "title": "高校数学I",
+      "sections": [
+        {
+          "title": "二次関数",
+          "topics": [
+            {
+              "title": "平方完成",
+              "status": "not_started"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

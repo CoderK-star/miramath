@@ -1,0 +1,15 @@
+{
+  "conversation": {
+    "title": "二次関数の復習",
+    "messages": [
+      {
+        "role": "user",
+        "content": "二次方程式 x^2 - 5x + 6 = 0 の解き方を教えて"
+      },
+      {
+        "role": "assistant",
+        "content": "因数分解して (x-2)(x-3)=0 と置くので、x=2,3 です。"
+      }
+    ]
+  }
+}
