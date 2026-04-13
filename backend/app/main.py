@@ -18,11 +18,14 @@ app = FastAPI(title="Miramath", version="1.0.0")
 logger = logging.getLogger(__name__)
 
 # セッションミドルウェア（CORSより先に追加し、内側に配置）
+# 本番環境（Vercel + 別ドメインバックエンド）ではクロスオリジンになるため
+# SameSite=None; Secure が必要。ローカル開発では Lax のまま。
+_is_production = APP_ENV not in {"local", "dev"}
 app.add_middleware(
     SessionMiddleware,
     secret_key=SESSION_SECRET or "dev-secret-change-in-production",
-    same_site="lax",
-    https_only=APP_ENV not in {"local", "dev"},
+    same_site="none" if _is_production else "lax",
+    https_only=_is_production,
     max_age=86400 * 30,  # 30日
 )
 # CORS設定（フロントエンドからのアクセスを許可）

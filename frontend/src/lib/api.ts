@@ -1,11 +1,16 @@
+// API calls go to relative paths (/api/...) so that:
+// - In production (Vercel): Next.js rewrites proxy them to the backend (BACKEND_URL)
+// - In local dev without rewrites: fallback to localhost:8000
 function resolveApiBase(): string {
-  if (process.env.NEXT_PUBLIC_API_BASE) {
-    return process.env.NEXT_PUBLIC_API_BASE;
-  }
   if (typeof window !== "undefined") {
-    return `${window.location.protocol}//${window.location.hostname}:8000`;
+    // If the rewrite is active, use relative path (empty base)
+    // If NEXT_PUBLIC_API_BASE is explicitly set (legacy local dev), use it
+    if (process.env.NEXT_PUBLIC_API_BASE) {
+      return process.env.NEXT_PUBLIC_API_BASE;
+    }
+    return "";
   }
-  return "http://127.0.0.1:8000";
+  return "";
 }
 
 const API_BASE = resolveApiBase();

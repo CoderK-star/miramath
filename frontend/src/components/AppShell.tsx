@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Sidebar } from "@/components/Sidebar";
 
+// Use relative path so requests go through Next.js rewrites proxy
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
