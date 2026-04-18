@@ -37,10 +37,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center bg-background">
+    <div className="flex h-[100dvh] items-center justify-center bg-background">
       <form
         onSubmit={handleLogin}
-        className="w-full max-w-sm space-y-5 p-8 rounded-2xl border border-card-border bg-white shadow-sm"
+        className="w-full max-w-sm space-y-5 p-6 sm:p-8 rounded-2xl border border-card-border bg-white shadow-sm"
       >
         <div className="flex items-center gap-2">
           <Image
@@ -62,7 +62,7 @@ export default function LoginPage() {
             placeholder="パスワードを入力"
             autoFocus
             autoComplete="current-password"
-            className="mt-1 w-full rounded-lg border border-card-border bg-white px-3 py-2 text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary/30"
+            className="mt-1 w-full rounded-lg border border-card-border bg-white px-3 py-2 text-base md:text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
         </label>
 

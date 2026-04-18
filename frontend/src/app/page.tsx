@@ -410,13 +410,23 @@ export default function ChatPage() {
   return (
     <div className="relative flex h-full overflow-hidden">
 
-      {/* 会話一覧サイドパネル */}
-
+      {/* 会話一覧パネル モバイル用バックドロップ */}
       <div
-        className={`bg-sidebar border-r border-sidebar-border flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${
+        className={`fixed inset-0 z-30 bg-black/50 md:hidden transition-opacity duration-300 ${
+          isConversationPanelOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={() => setIsConversationPanelOpen(false)}
+        aria-hidden="true"
+      />
+
+      {/* 会話一覧サイドパネル
+          デスクトップ: w-0/w-64 の width トランジション
+          モバイル: fixed ドロワー（translate による表示切り替え） */}
+      <div
+        className={`bg-sidebar border-r border-sidebar-border flex flex-col overflow-hidden transition-all duration-300 ease-in-out max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-40 max-md:w-72 max-md:shadow-xl ${
           isConversationPanelOpen
-            ? "w-64 opacity-100 translate-x-0"
-            : "w-0 opacity-0 -translate-x-4 pointer-events-none border-r-0"
+            ? "md:w-64 md:opacity-100 max-md:translate-x-0"
+            : "md:w-0 md:opacity-0 md:-translate-x-4 md:pointer-events-none md:border-r-0 max-md:-translate-x-full max-md:pointer-events-none"
         }`}
       >
         <div className="p-3 border-b border-sidebar-border">
@@ -469,7 +479,7 @@ export default function ChatPage() {
       <button
         onClick={() => setIsConversationPanelOpen((prev) => !prev)}
         aria-label={isConversationPanelOpen ? "会話一覧を隠す" : "会話一覧を表示"}
-        className={`absolute top-3 z-20 h-8 w-6 border border-card-border border-l-0 bg-card text-text-secondary rounded-r-md hover:bg-hover hover:text-text transition-all duration-300 ${
+        className={`absolute top-3 z-20 h-8 w-6 border border-card-border border-l-0 bg-card text-text-secondary rounded-r-md hover:bg-hover hover:text-text transition-all duration-300 max-md:hidden ${
           isConversationPanelOpen ? "left-64" : "left-0"
         }`}
       >
@@ -484,6 +494,24 @@ export default function ChatPage() {
       <div className="flex-1 flex flex-col min-w-0 h-full">
         {activeConvId ? (
           <>
+            {/* モバイル用会話パネルトグル */}
+            <div className="md:hidden flex items-center gap-2 px-3 py-2 border-b border-card-border bg-card shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsConversationPanelOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-text-secondary border border-card-border hover:bg-hover transition-colors"
+              >
+                <HiChevronRight className="w-3.5 h-3.5" />
+                会話一覧
+              </button>
+              <button
+                onClick={handleNewConversation}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white rounded-lg text-xs hover:bg-primary-hover transition-colors"
+              >
+                <HiOutlinePlus className="w-3.5 h-3.5" />
+                新しい会話
+              </button>
+            </div>
             <div
               data-chat-messages-scroll-root
               ref={messagesViewportRef}
@@ -523,14 +551,27 @@ export default function ChatPage() {
             <ChatInput onSend={handleSend} disabled={isLoading} />
           </>
         ) : (
-          <EmptyState
-            icon="🎓"
-            title="Miramath"
-            description="「新しい会話」をクリックして学習を始めましょう"
-            actionLabel="学習を始める"
-            onAction={handleNewConversation}
-            className="flex-1"
-          />
+          <>
+            {/* モバイル用会話パネルトグル（会話未選択時） */}
+            <div className="md:hidden flex items-center gap-2 px-3 py-2 border-b border-card-border bg-card shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsConversationPanelOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-text-secondary border border-card-border hover:bg-hover transition-colors"
+              >
+                <HiChevronRight className="w-3.5 h-3.5" />
+                会話一覧
+              </button>
+            </div>
+            <EmptyState
+              icon="🎓"
+              title="Miramath"
+              description="「新しい会話」をクリックして学習を始めましょう"
+              actionLabel="学習を始める"
+              onAction={handleNewConversation}
+              className="flex-1"
+            />
+          </>
         )}
       </div>
     </div>

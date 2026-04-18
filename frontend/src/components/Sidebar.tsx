@@ -1,6 +1,5 @@
 "use client";
 
-// このファイルは"サイドバーコンポーネント"を定義しています。ナビゲーションリンクとアイコンを表示し、現在のページに基づいてアクティブなリンクをハイライトします。Next.js の Link コンポーネントを使用してクライアントサイドのルーティングを実現しています。また、usePathname フックを使用して現在のパスを取得し、どのリンクがアクティブかを判断しています。
 import { useEffect, useLayoutEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -15,10 +14,10 @@ import {
   HiChevronLeft,
   HiChevronRight,
   HiArrowRightOnRectangle,
+  HiXMark,
 } from "react-icons/hi2";
 import { getLLMSettings, updateLLMSettings } from "@/lib/api";
 
-// サイドバーにあるアイテムの定義。各アイテムは、リンク先のURL、表示するラベル、アイコンコンポーネントを持っています。
 const navItems = [
   { href: "/", label: "チャット", icon: HiOutlineChatBubbleLeftRight },
   { href: "/curriculum", label: "カリキュラム", icon: HiOutlineAcademicCap },
@@ -37,7 +36,12 @@ const SYSTEM_PROMPT_PLACEHOLDER = `入力例:
 - 難しい概念は身近な例えを使って説明してください
 - 日本語で回答してください`;
 
-export function Sidebar() {
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [systemPrompt, setSystemPrompt] = useState("");
@@ -125,137 +129,156 @@ export function Sidebar() {
   };
 
   return (
-    <div className="flex h-full">
-      <aside className="w-56 bg-sidebar border-r border-sidebar-border flex flex-col">
-        <div className="p-4 border-b border-sidebar-border">
-          <h1 className="text-lg font-bold text-primary inline-flex items-center gap-2">
-            <Image
-              src="/miramath-logo.svg"
-              alt="Miramath logo"
-              width={20}
-              height={20}
-              priority
-            />
-            <span>Miramath</span>
-          </h1>
-          <p className="text-xs text-text-muted mt-1">パーソナル数学家庭教師</p>
-        </div>
-        <nav className="flex-1 p-2 space-y-1">
-          {navItems.map((item) => {
-            const isActive =
-              pathname === item.href ||
-              (item.href !== "/" && pathname.startsWith(item.href));
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  isActive
-                    ? "bg-primary-light text-primary"
-                    : "text-text-secondary hover:bg-hover hover:text-text"
-                }`}
-              >
-                <item.icon className="w-5 h-5" />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="p-2 border-t border-sidebar-border space-y-1">
-          <button
-            type="button"
-            onClick={() => {
-              setIsSettingsOpen((prev) => !prev);
-              setSettingsError(null);
-              setSettingsInfo(null);
-            }}
-            className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isSettingsOpen
-                ? "bg-primary-light text-primary"
-                : "text-text-secondary hover:bg-hover hover:text-text"
-            }`}
-          >
-            <span className="inline-flex items-center gap-3">
-              <HiOutlineCog6Tooth className="w-5 h-5" />
-              設定
-            </span>
-            {isSettingsOpen ? (
-              <HiChevronLeft className="w-4 h-4" />
-            ) : (
-              <HiChevronRight className="w-4 h-4" />
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-text-secondary hover:bg-hover hover:text-text"
-          >
-            <HiArrowRightOnRectangle className="w-5 h-5" />
-            ログアウト
-          </button>
-        </div>
-      </aside>
+    <>
+      <div
+        className={`fixed inset-0 z-40 bg-black/50 md:hidden transition-opacity duration-300 ${
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={onClose}
+        aria-hidden="true"
+      />
 
       <div
-        className={`bg-sidebar border-r border-sidebar-border overflow-hidden transition-all duration-300 ease-in-out ${
-          isSettingsOpen
-            ? "w-80 opacity-100 translate-x-0"
-            : "w-0 opacity-0 -translate-x-4 pointer-events-none border-r-0"
+        className={`flex h-full max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-50 max-md:shadow-xl max-md:transition-transform max-md:duration-300 max-md:ease-in-out ${
+          isOpen ? "max-md:translate-x-0" : "max-md:-translate-x-full"
         }`}
       >
-        <div className="h-full flex flex-col">
-          <div className="px-4 py-3 border-b border-sidebar-border">
-            <h2 className="text-base font-semibold text-text">設定</h2>
-            <p className="text-xs text-text-muted mt-1">
-              system prompt をUIから設定できます。
-            </p>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            <label className="block text-sm text-text-secondary">
-              system_prompt
-              <textarea
-                value={systemPrompt}
-                onChange={(e) => setSystemPrompt(e.target.value)}
-                placeholder={SYSTEM_PROMPT_PLACEHOLDER}
-                rows={12}
-                className="mt-1 w-full resize-y rounded-lg border border-card-border bg-white px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
-              />
-            </label>
-
-            {settingsError ? (
-              <p className="text-sm text-error bg-error-light border border-error/30 rounded-lg px-3 py-2">
-                {settingsError}
-              </p>
-            ) : null}
-
-            {settingsInfo ? (
-              <p className="text-sm text-success bg-success-light border border-success/30 rounded-lg px-3 py-2">
-                {settingsInfo}
-              </p>
-            ) : null}
-          </div>
-
-          <div className="p-4 border-t border-sidebar-border flex items-center justify-end gap-2">
-            {/*<button
-              type="button"
-              onClick={() => setIsSettingsOpen(false)}
-              className="px-3 py-2 rounded-lg text-sm border border-card-border text-text-secondary hover:bg-hover"
-            >
-              閉じる
-            </button>*/}
+        <aside className="w-56 bg-sidebar border-r border-sidebar-border flex flex-col">
+          <div className="p-4 border-b border-sidebar-border flex items-center justify-between">
+            <div>
+              <h1 className="text-lg font-bold text-primary inline-flex items-center gap-2">
+                <Image
+                  src="/miramath-logo.svg"
+                  alt="Miramath logo"
+                  width={20}
+                  height={20}
+                  priority
+                />
+                <span>Miramath</span>
+              </h1>
+              <p className="text-xs text-text-muted mt-1">パーソナル数学家庭教師</p>
+            </div>
             <button
               type="button"
-              onClick={handleSaveSettings}
-              disabled={isLoadingSettings || isSavingSettings}
-              className="px-3 py-2 rounded-lg text-sm bg-primary text-white hover:bg-primary-hover disabled:opacity-60"
+              onClick={onClose}
+              className="md:hidden p-1.5 rounded-lg text-text-muted hover:bg-hover"
+              aria-label="メニューを閉じる"
             >
-              {isLoadingSettings ? "読込中..." : isSavingSettings ? "保存中..." : "保存"}
+              <HiXMark className="w-5 h-5" />
             </button>
+          </div>
+          <nav className="flex-1 p-2 space-y-1">
+            {navItems.map((item) => {
+              const isActive =
+                pathname === item.href ||
+                (item.href !== "/" && pathname.startsWith(item.href));
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onClose}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-primary-light text-primary"
+                      : "text-text-secondary hover:bg-hover hover:text-text"
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="p-2 border-t border-sidebar-border space-y-1">
+            <button
+              type="button"
+              onClick={() => {
+                setIsSettingsOpen((prev) => !prev);
+                setSettingsError(null);
+                setSettingsInfo(null);
+              }}
+              className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isSettingsOpen
+                  ? "bg-primary-light text-primary"
+                  : "text-text-secondary hover:bg-hover hover:text-text"
+              }`}
+            >
+              <span className="inline-flex items-center gap-3">
+                <HiOutlineCog6Tooth className="w-5 h-5" />
+                設定
+              </span>
+              {isSettingsOpen ? (
+                <HiChevronLeft className="w-4 h-4" />
+              ) : (
+                <HiChevronRight className="w-4 h-4" />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-text-secondary hover:bg-hover hover:text-text"
+            >
+              <HiArrowRightOnRectangle className="w-5 h-5" />
+              ログアウト
+            </button>
+          </div>
+        </aside>
+
+        <div
+          className={`bg-sidebar border-r border-sidebar-border overflow-hidden transition-all duration-300 ease-in-out ${
+            isSettingsOpen
+              ? "w-[calc(100vw-14rem)] md:w-80 opacity-100 translate-x-0"
+              : "w-0 opacity-0 -translate-x-4 pointer-events-none border-r-0"
+          }`}
+        >
+          <div className="h-full flex flex-col">
+            <div className="px-4 py-3 border-b border-sidebar-border">
+              <h2 className="text-base font-semibold text-text">設定</h2>
+              <p className="text-xs text-text-muted mt-1">
+                system prompt をUIから設定できます。
+              </p>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <label className="block text-sm text-text-secondary">
+                system_prompt
+                <textarea
+                  value={systemPrompt}
+                  onChange={(e) => setSystemPrompt(e.target.value)}
+                  placeholder={SYSTEM_PROMPT_PLACEHOLDER}
+                  rows={12}
+                  className="mt-1 w-full resize-y rounded-lg border border-card-border bg-white px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </label>
+
+              {settingsError ? (
+                <p className="text-sm text-error bg-error-light border border-error/30 rounded-lg px-3 py-2">
+                  {settingsError}
+                </p>
+              ) : null}
+
+              {settingsInfo ? (
+                <p className="text-sm text-success bg-success-light border border-success/30 rounded-lg px-3 py-2">
+                  {settingsInfo}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="p-4 border-t border-sidebar-border flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={handleSaveSettings}
+                disabled={isLoadingSettings || isSavingSettings}
+                className="px-3 py-2 rounded-lg text-sm bg-primary text-white hover:bg-primary-hover disabled:opacity-60"
+              >
+                {isLoadingSettings ? "読込中..." : isSavingSettings ? "保存中..." : "保存"}
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -58,7 +58,7 @@ export function ChatInput({ onSend, disabled }: Props) {
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="p-2 text-text-muted hover:text-text-secondary rounded-lg hover:bg-hover"
+          className="p-2.5 text-text-muted hover:text-text-secondary rounded-lg hover:bg-hover"
           title="画像を添付"
           aria-label="画像を添付"
         >
@@ -82,7 +82,7 @@ export function ChatInput({ onSend, disabled }: Props) {
           onKeyDown={handleKeyDown}
           placeholder="数学の質問を入力してください..."
           rows={1}
-          className="flex-1 resize-none rounded-xl border border-card-border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="flex-1 resize-none rounded-xl border border-card-border px-4 py-2.5 text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           disabled={disabled}
           aria-label="質問入力"
           aria-invalid={Boolean(formError)}
