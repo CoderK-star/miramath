@@ -5,6 +5,7 @@ import {
   listMaterials,
   uploadMaterial,
   deleteMaterial,
+  replaceMaterial,
   type Material,
 } from "@/lib/api";
 import {
@@ -15,6 +16,7 @@ import {
   HiOutlineCheckCircle,
   HiOutlineExclamationCircle,
   HiOutlineCog6Tooth,
+  HiOutlineArrowPath,
 } from "react-icons/hi2";
 import {
   readSessionState,
@@ -46,7 +48,10 @@ export default function MaterialsPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+  const [replacingId, setReplacingId] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const replaceFileRef = useRef<HTMLInputElement>(null);
 
   useScrollRestoration("materials.page");
 
@@ -135,9 +140,32 @@ export default function MaterialsPage() {
     try {
       setErrorMessage(null);
       await deleteMaterial(id);
+      setDeleteConfirmId(null);
       loadMaterials();
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : String(err));
+    }
+  };
+
+  const handleReplaceClick = (id: number) => {
+    setReplacingId(id);
+    replaceFileRef.current?.click();
+  };
+
+  const handleReplaceFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || replacingId === null) return;
+    setIsUploading(true);
+    setErrorMessage(null);
+    try {
+      await replaceMaterial(replacingId, file);
+      await loadMaterials();
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : String(err));
+    } finally {
+      setIsUploading(false);
+      setReplacingId(null);
+      if (replaceFileRef.current) replaceFileRef.current.value = "";
     }
   };
 
@@ -219,6 +247,13 @@ export default function MaterialsPage() {
           className="hidden"
           onChange={(e) => queueFiles(e.target.files)}
         />
+        <input
+          ref={replaceFileRef}
+          type="file"
+          accept=".pdf,.png,.jpg,.jpeg,.webp,.gif"
+          className="hidden"
+          onChange={handleReplaceFileChange}
+        />
 
         {pendingFiles.length > 0 && (
           <div className="mt-4 rounded-lg border border-card-border bg-background p-3 text-left">
@@ -299,12 +334,39 @@ export default function MaterialsPage() {
               </div>
               {statusIcon(mat.status)}
               <button
-                onClick={() => handleDelete(mat.id)}
-                className="p-2 text-text-muted hover:text-error transition-colors"
-                aria-label={`${mat.original_filename}を削除`}
+                onClick={() => handleReplaceClick(mat.id)}
+                disabled={isUploading}
+                className="p-2 text-text-muted hover:text-primary transition-colors disabled:opacity-50"
+                aria-label={`${mat.original_filename}を取り替え`}
+                title="別のファイルで取り替える"
               >
-                <HiOutlineTrash className="w-4 h-4" />
+                <HiOutlineArrowPath className="w-4 h-4" />
               </button>
+              {deleteConfirmId === mat.id ? (
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-text-muted">削除しますか？</span>
+                  <button
+                    onClick={() => handleDelete(mat.id)}
+                    className="rounded px-2 py-1 text-xs bg-error text-white hover:bg-red-700"
+                  >
+                    削除
+                  </button>
+                  <button
+                    onClick={() => setDeleteConfirmId(null)}
+                    className="rounded px-2 py-1 text-xs border border-card-border text-text-secondary hover:bg-hover"
+                  >
+                    取り消し
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setDeleteConfirmId(mat.id)}
+                  className="p-2 text-text-muted hover:text-error transition-colors"
+                  aria-label={`${mat.original_filename}を削除`}
+                >
+                  <HiOutlineTrash className="w-4 h-4" />
+                </button>
+              )}
             </div>
           ))}
         </div>

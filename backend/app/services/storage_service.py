@@ -79,6 +79,11 @@ def download_file(blob_path: str) -> bytes:
         return path.read_bytes()
 
 
+def get_local_path(blob_path: str) -> str:
+    """ローカルストレージにおけるファイルの絶対パスを返す。"""
+    return str(_LOCAL_UPLOAD_DIR / blob_path)
+
+
 def delete_file(blob_path: str) -> None:
     """ストレージからファイルを削除する（存在しない場合は無視）。"""
     if STORAGE_BACKEND == "gcs":

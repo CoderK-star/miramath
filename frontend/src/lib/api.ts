@@ -269,6 +269,23 @@ export function deleteMaterial(materialId: number) {
   return apiFetch(`/api/materials/${materialId}`, { method: "DELETE" });
 }
 
+export async function replaceMaterial(materialId: number, file: File): Promise<Material> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch(`${API_BASE}/api/materials/${materialId}/replace`, {
+    method: "PUT",
+    credentials: "include",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Replace Error ${res.status}: ${text}`);
+  }
+  return res.json();
+}
+
 // --- Progress ---
 
 export interface ProgressSummary {

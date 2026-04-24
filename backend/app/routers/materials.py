@@ -102,7 +102,88 @@ async def upload_material(
 
     # ベクトル化（バイト列を直接渡す）
     try:
-        chunk_count = await index_material(material.id, content, file_type, db)
+        local_path = storage_service.get_local_path(blob_path)
+        chunk_count = await index_material(material.id, local_path, file_type)
+        material.chunk_count = chunk_count
+        material.status = "ready"
+    except Exception as e:
+        material.status = "error"
+        material.error_message = str(e)
+    db.commit()
+    db.refresh(material)
+
+    return MaterialOut(
+        id=material.id,
+        original_filename=material.original_filename,
+        file_type=material.file_type,
+        file_size=material.file_size,
+        chunk_count=material.chunk_count,
+        status=material.status,
+        error_message=material.error_message,
+        created_at=material.created_at.isoformat(),
+    )
+
+
+@router.put("/{material_id}/replace", response_model=MaterialOut)
+async def replace_material(
+    material_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+):
+    material = db.query(Material).filter(Material.id == material_id).first()
+    if not material:
+        raise HTTPException(status_code=404, detail="資料が見つかりません")
+
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="ファイル名が必要です")
+
+    ext = Path(file.filename).suffix.lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"サポートされていないファイル形式です: {ext}",
+        )
+
+    if file.content_type and file.content_type not in ALLOWED_UPLOAD_MIME_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"サポートされていないMIMEタイプです: {file.content_type}",
+        )
+
+    file_type = "pdf" if ext == ".pdf" else "image"
+
+    content = await file.read()
+    max_size_bytes = MAX_UPLOAD_SIZE_MB * 1024 * 1024
+    if len(content) > max_size_bytes:
+        raise HTTPException(
+            status_code=413,
+            detail=f"ファイルサイズ上限を超えています: {MAX_UPLOAD_SIZE_MB}MB まで",
+        )
+
+    # 旧ファイル・チャンクを削除
+    storage_service.delete_file(material.filename)
+    delete_material_chunks(material_id)
+
+    # 新ファイルをストレージに保存
+    saved_name = f"{uuid4().hex}{ext}"
+    blob_path = f"materials/{saved_name}"
+    storage_service.upload_file(content, blob_path)
+
+    # DBを更新
+    material.filename = blob_path
+    material.original_filename = file.filename
+    material.file_type = file_type
+    material.file_size = len(content)
+    material.chunk_count = 0
+    material.status = "processing"
+    material.error_message = None
+    db.commit()
+    db.refresh(material)
+
+    # 再インデックス
+    try:
+        local_path = storage_service.get_local_path(blob_path)
+        chunk_count = await index_material(material.id, local_path, file_type)
         material.chunk_count = chunk_count
         material.status = "ready"
     except Exception as e:
@@ -133,7 +214,7 @@ def delete_material(material_id: int, db: Session = Depends(get_db)):
     storage_service.delete_file(material.filename)
 
     # チャンク削除
-    delete_material_chunks(material_id, db)
+    delete_material_chunks(material_id)
 
     # DB削除
     db.delete(material)
