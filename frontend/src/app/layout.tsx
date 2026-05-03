@@ -18,6 +18,15 @@ export const metadata: Metadata = {
   title: "Miramath",
   description: "パーソナル数学学習アプリ",
   applicationName: "Miramath",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Miramath",
+  },
+  formatDetection: {
+    telephone: false,
+  },
   icons: {
     icon: "/miramath-favicon.svg",
     shortcut: "/miramath-favicon.svg",
@@ -28,7 +37,9 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  minimumScale: 1,
   viewportFit: "cover",
+  themeColor: "#1d4ed8",
 };
 
 export default function RootLayout({

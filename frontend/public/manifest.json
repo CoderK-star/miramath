@@ -1,0 +1,39 @@
+{
+  "name": "Miramath",
+  "short_name": "Miramath",
+  "description": "パーソナル数学学習アプリ",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#1d4ed8",
+  "background_color": "#f0f2f5",
+  "lang": "ja",
+  "categories": ["education"],
+  "icons": [
+    {
+      "src": "/miramath-favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/miramath-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "チャット",
+      "url": "/",
+      "icons": [{ "src": "/miramath-favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "練習問題",
+      "url": "/practice",
+      "icons": [{ "src": "/miramath-favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    }
+  ],
+  "screenshots": []
+}
