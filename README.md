@@ -2,6 +2,8 @@
 
 Miramath は、個人利用向けの数学学習アプリです。  
 
+
+
 ## 主な機能
 
 - チャット学習: 数式つき対話（LaTeX）
@@ -11,6 +13,22 @@ Miramath は、個人利用向けの数学学習アプリです。
 - 資料 RAG: アップロード資料を参照した回答
 - 進捗: 学習履歴と進み具合の可視化
 - 認証: シングルユーザーログイン
+
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="screenshots/screenshot1.png" alt="チャット画面" width="100%"><br>
+      <sub>チャット学習画面</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="screenshots/screenshot2.png" alt="カリキュラム画面" width="100%"><br>
+      <sub>カリキュラム一覧画面</sub>
+    </td>
+  </tr>
+</table>
+
+---
 
 ## ローカル起動
 
